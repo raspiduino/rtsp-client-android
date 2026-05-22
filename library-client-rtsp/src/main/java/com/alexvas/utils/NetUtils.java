@@ -27,64 +27,15 @@ public class NetUtils {
     private static final boolean DEBUG = false;
     private final static int MAX_LINE_SIZE = 4098;
 
-    public static final class FakeX509TrustManager implements X509TrustManager {
-
-        /**
-         * Accepted issuers for fake trust manager
-         */
-        final static private X509Certificate[] mAcceptedIssuers = new X509Certificate[]{};
-
-        /**
-         * Constructor for FakeX509TrustManager.
-         */
-        public FakeX509TrustManager() {
-        }
-
-        /**
-         * @see javax.net.ssl.X509TrustManager#checkClientTrusted(X509Certificate[],String authType)
-         */
-        public void checkClientTrusted(X509Certificate[] certificates, String authType)
-        throws CertificateException {
-        }
-
-        /**
-         * @see javax.net.ssl.X509TrustManager#checkServerTrusted(X509Certificate[],String authType)
-         */
-        public void checkServerTrusted(X509Certificate[] certificates, String authType)
-        throws CertificateException {
-        }
-
-        // https://github.com/square/okhttp/issues/4669
-        // Called by Android via reflection in X509TrustManagerExtensions.
-        @SuppressWarnings("unused")
-        public List<X509Certificate> checkServerTrusted(X509Certificate[] chain, String authType, String host) throws CertificateException {
-            return Arrays.asList(chain);
-        }
-
-        /**
-         * @see javax.net.ssl.X509TrustManager#getAcceptedIssuers()
-         */
-        public X509Certificate[] getAcceptedIssuers() {
-            return mAcceptedIssuers;
-        }
-    }
-
-    @NonNull
-    public static SSLSocket createSslSocketAndConnect(@NonNull String dstName, int dstPort, int timeout) throws Exception {
+    @NonNull  
+    public static SSLSocket createSslSocketAndConnect(@NonNull String dstName, int dstPort, int timeout) throws Exception {  
         if (DEBUG)
             Log.v(TAG, "createSslSocketAndConnect(dstName=" + dstName + ", dstPort=" + dstPort + ", timeout=" + timeout + ")");
 
-//        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-//        trustManagerFactory.init((KeyStore) null);
-//        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-//        if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-//           throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
-//        }
-//        X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
+        // Request the OS default factory
+        javax.net.ssl.SSLSocketFactory factory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+        SSLSocket sslSocket = (SSLSocket) factory.createSocket();
 
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, new TrustManager[] { new FakeX509TrustManager() }, null);
-        SSLSocket sslSocket = (SSLSocket) sslContext.getSocketFactory().createSocket();
         sslSocket.connect(new InetSocketAddress(dstName, dstPort), timeout);
         sslSocket.setSoLinger(false, 1);
         sslSocket.setSoTimeout(timeout);
