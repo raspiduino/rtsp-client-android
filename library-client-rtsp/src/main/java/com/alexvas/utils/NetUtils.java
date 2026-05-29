@@ -27,19 +27,24 @@ public class NetUtils {
     private static final boolean DEBUG = false;
     private final static int MAX_LINE_SIZE = 4098;
 
-    @NonNull  
-    public static SSLSocket createSslSocketAndConnect(@NonNull String dstName, int dstPort, int timeout) throws Exception {  
-        if (DEBUG)
-            Log.v(TAG, "createSslSocketAndConnect(dstName=" + dstName + ", dstPort=" + dstPort + ", timeout=" + timeout + ")");
-
-        // Request the OS default factory
-        javax.net.ssl.SSLSocketFactory factory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
-        SSLSocket sslSocket = (SSLSocket) factory.createSocket();
-
-        sslSocket.connect(new InetSocketAddress(dstName, dstPort), timeout);
-        sslSocket.setSoLinger(false, 1);
-        sslSocket.setSoTimeout(timeout);
-        return sslSocket;
+    @NonNull    
+    public static SSLSocket createSslSocketAndConnect(@NonNull String dstName, int dstPort, int timeout) throws Exception {    
+        if (DEBUG)  
+            Log.v(TAG, "createSslSocketAndConnect(dstName=" + dstName + ", dstPort=" + dstPort + ", timeout=" + timeout + ")");  
+  
+        // Request the OS default factory  
+        javax.net.ssl.SSLSocketFactory factory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();  
+        SSLSocket sslSocket = (SSLSocket) factory.createSocket();  
+        
+        // Enable hostname verification
+        javax.net.ssl.SSLParameters sslParams = sslSocket.getSSLParameters();
+        sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+        sslSocket.setSSLParameters(sslParams);
+  
+        sslSocket.connect(new InetSocketAddress(dstName, dstPort), timeout);  
+        sslSocket.setSoLinger(false, 1);  
+        sslSocket.setSoTimeout(timeout);  
+        return sslSocket;  
     }
 
     @NonNull
